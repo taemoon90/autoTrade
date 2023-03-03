@@ -1,0 +1,77 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © hushedFlamingo4002a
+
+//@version=5
+strategy("변동성-돌파전략 1일봉",
+     overlay = true,
+     initial_capital = 1000000,
+     default_qty_type = strategy.percent_of_equity,
+     default_qty_value = 100,
+     process_orders_on_close = true)
+
+start_time = input.time(timestamp("2022-01-01"), confirm=true)
+end_time = input.time(timestamp("2050-12-30"), confirm=true)
+is_in_time = time >= start_time and time <= end_time
+
+length = high - low
+k = input.float(0.5)
+
+new_length = length * k
+entry_price = close + new_length
+plot(close, offset = 1, linewidth = 2, color = color.white)
+plot(entry_price, offset = 1, linewidth = 2, color = color.yellow)
+
+if is_in_time
+    strategy.entry("매수", strategy.long, stop = entry_price)
+    strategy.close("매수")
+    
+    
+
+
+
+
+
+
+
+
+
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © hushedFlamingo4002a
+
+//@version=5
+strategy("역추세-볼린저밴드 4시간봉",
+     overlay = true,
+     process_orders_on_close = true,
+     initial_capital = 1000000,
+     default_qty_type = strategy.percent_of_equity,
+     default_qty_value = 100)
+
+length = input.int(5, "길이", 1, 20)
+multi = input.int(4, "멀티", 1, 20)
+[middle, upper, lower] = ta.bb(close, length, multi)
+
+start_time = input.time(timestamp("2022-01-01"), confirm=true)
+end_time = input.time(timestamp("2023-12-30"), confirm=true)
+is_in_time = time >= start_time and time <= end_time
+
+plot(middle, color=color.yellow) 
+plot(upper, color=color.red)
+plot(lower, color=color.blue)
+
+// stddev = ta.stdev(close, length) // 파이썬 확인용
+// plot(stddev, color=color.green)
+
+ma15= ta.sma(close, 15)
+plot(ma15, color=color.orange)
+
+is_long = ta.crossunder(low, lower) // 저가가 하단선을 아래로 돌파?
+is_close = ta.crossover(high, upper) // 고가가 상산선을 위로 돌파?
+if is_in_time
+    if is_long // and ma15>close
+        strategy.entry("롱", strategy.long)
+        //strategy.close("숏")
+    if is_close
+        //strategy.entry("숏", strategy.short)
+        strategy.close("롱")
+
+// P.S. 하락장일떄 너무 약하다
